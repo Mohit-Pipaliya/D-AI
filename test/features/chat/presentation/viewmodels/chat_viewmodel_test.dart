@@ -46,6 +46,7 @@ void main() {
     test('initial state has empty messages and not loading', () {
       expect(viewModel.state.messages, isEmpty);
       expect(viewModel.state.isLoading, isFalse);
+      expect(viewModel.state.isOffline, isFalse);
       expect(viewModel.state.errorMessage, isNull);
     });
 
@@ -87,6 +88,53 @@ void main() {
 
       viewModel.stopGeneration();
       expect(viewModel.state.isLoading, isFalse);
+    });
+
+    test('offline mode queues user message without starting stream', () async {
+      viewModel.setOffline(true);
+      expect(viewModel.state.isOffline, isTrue);
+
+      await viewModel.sendMessage('Queued offline question');
+      await pumpEventQueue();
+
+      // Only 1 message (user message in queued status), no assistant message added
+      expect(viewModel.state.messages.length, equals(1));
+      expect(viewModel.state.messages[0].content,
+          equals('Queued offline question'));
+      expect(viewModel.state.messages[0].status, equals(MessageStatus.queued));
+      expect(viewModel.state.isLoading, isFalse);
+      expect(repository.activeController, isNull);
+    });
+
+    test('retryMessage restarts stream for failed assistant message', () async {
+      // Send a message that fails
+      final future = viewModel.sendMessage('Test prompt');
+      await pumpEventQueue();
+
+      repository.activeController?.addError(Exception('Network timeout'));
+      await repository.activeController?.close();
+      await future;
+
+      expect(viewModel.state.messages[1].status, equals(MessageStatus.error));
+
+      // Retry the assistant message
+      final retryFuture =
+          viewModel.retryMessage(viewModel.state.messages[1].id);
+      await pumpEventQueue();
+
+      expect(viewModel.state.isLoading, isTrue);
+      expect(
+          viewModel.state.messages[1].status, equals(MessageStatus.streaming));
+
+      repository.activeController?.add('Recovered answer');
+      await pumpEventQueue();
+      expect(viewModel.state.messages[1].content, equals('Recovered answer'));
+
+      await repository.activeController?.close();
+      await retryFuture;
+
+      expect(viewModel.state.isLoading, isFalse);
+      expect(viewModel.state.messages[1].status, equals(MessageStatus.sent));
     });
   });
 }

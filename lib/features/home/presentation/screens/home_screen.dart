@@ -233,4 +233,3 @@ class _ActivationModeTile extends StatelessWidget {
     );
   }
 }
-

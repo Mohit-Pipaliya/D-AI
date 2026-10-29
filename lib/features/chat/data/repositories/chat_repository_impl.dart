@@ -38,4 +38,3 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 }
-

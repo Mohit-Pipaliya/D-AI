@@ -78,4 +78,3 @@ class _AppLogFilter extends LogFilter {
     return event.level.value >= Level.warning.value;
   }
 }
-

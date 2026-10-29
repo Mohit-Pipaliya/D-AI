@@ -16,9 +16,11 @@ enum MessageStatus {
   sending,
   streaming,
   sent,
+  queued,
   error;
 
   bool get isStreaming => this == MessageStatus.streaming;
+  bool get isQueued => this == MessageStatus.queued;
   bool get isError => this == MessageStatus.error;
 }
 

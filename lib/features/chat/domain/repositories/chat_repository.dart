@@ -15,4 +15,3 @@ abstract interface class ChatRepository {
   /// Saves a message locally.
   Future<void> saveMessage(String conversationId, Message message);
 }
-

@@ -36,4 +36,3 @@ final sseClientProvider = Provider<SseClient>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return SseClient(apiClient.dio);
 });
-

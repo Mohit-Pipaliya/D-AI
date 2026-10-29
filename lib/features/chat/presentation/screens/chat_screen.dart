@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/config/app_constants.dart';
@@ -6,7 +7,8 @@ import '../../../../core/theme/glassmorphism.dart';
 import '../../domain/entities/message.dart';
 import '../viewmodels/chat_viewmodel.dart';
 
-/// Glassmorphic Chat Screen supporting token streaming and quick replies.
+/// Glassmorphic Chat Screen supporting token streaming, markdown rendering,
+/// offline queuing, and quick message retry.
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
 
@@ -67,6 +69,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // Offline banner indicator
+            if (chatState.isOffline)
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                color: theme.colorScheme.errorContainer,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_off_rounded,
+                      size: 16,
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Offline: Messages will be queued locally and sent when reconnected.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Message list
             Expanded(
               child: chatState.messages.isEmpty
                   ? Center(
@@ -76,14 +106,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           Icon(
                             Icons.chat_bubble_outline,
                             size: 64,
-                            color: theme.colorScheme.primary.withOpacity(0.5),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'Say "Hey ${AppConstants.appName}" or type below',
                             style: theme.textTheme.bodyLarge?.copyWith(
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.6),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -96,7 +127,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       itemCount: chatState.messages.length,
                       itemBuilder: (context, index) {
                         final message = chatState.messages[index];
-                        return _MessageBubble(message: message);
+                        return _MessageBubble(
+                          message: message,
+                          onRetry: () {
+                            ref
+                                .read(chatViewModelProvider.notifier)
+                                .retryMessage(message.id);
+                          },
+                        );
                       },
                     ),
             ),
@@ -115,9 +153,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({
+    required this.message,
+    required this.onRetry,
+  });
 
   final Message message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +171,7 @@ class _MessageBubble extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.78,
+          maxWidth: MediaQuery.of(context).size.width * 0.82,
         ),
         decoration: Glassmorphism.cardDecoration(
           context,
@@ -141,22 +183,103 @@ class _MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              message.content.isEmpty && message.status.isStreaming
-                  ? '...'
-                  : message.content,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            if (message.status.isError)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  message.errorMessage ?? 'Error',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
+            if (isUser)
+              Text(
+                message.content,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                ),
+              )
+            else if (message.content.isEmpty && message.status.isStreaming)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Thinking...',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              )
+            else
+              MarkdownBody(
+                data: message.content,
+                selectable: true,
+                styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                  p: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  code: TextStyle(
+                    backgroundColor:
+                        theme.colorScheme.surfaceVariant.withValues(alpha: 0.5),
+                    fontFamily: 'monospace',
+                    fontSize: 13,
+                  ),
+                  codeblockDecoration: BoxDecoration(
+                    color:
+                        theme.colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+
+            // Error or Queued badge with Retry button
+            if (message.status.isError || message.status.isQueued)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      message.status.isQueued
+                          ? Icons.schedule_rounded
+                          : Icons.error_outline_rounded,
+                      size: 14,
+                      color: message.status.isQueued
+                          ? theme.colorScheme.secondary
+                          : theme.colorScheme.error,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        message.status.isQueued
+                            ? 'Queued (offline)'
+                            : (message.errorMessage ?? 'Request failed'),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: message.status.isQueued
+                              ? theme.colorScheme.secondary
+                              : theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: onRetry,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 2),
+                        child: Text(
+                          'Retry',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -184,10 +307,10 @@ class _InputBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.9),
+        color: theme.colorScheme.surface.withValues(alpha: 0.9),
         border: Border(
           top: BorderSide(
-            color: theme.dividerColor.withOpacity(0.2),
+            color: theme.dividerColor.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -209,7 +332,8 @@ class _InputBar extends StatelessWidget {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+                fillColor:
+                    theme.colorScheme.surfaceVariant.withValues(alpha: 0.4),
               ),
               onSubmitted: (_) => onSend(),
             ),
