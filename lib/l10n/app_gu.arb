@@ -1,0 +1,19 @@
+{
+  "@@locale": "gu",
+  "appName": "ડી",
+  "homeTitle": "તમારી સહાય માટે તૈયાર",
+  "homeSubtitle": "\"હે ડી\" કહો અથવા બે વાર તાળી પાડો",
+  "activationModes": "સક્રિયકરણ મોડ્સ",
+  "wakePhrase": "વેક શબ્દસમૂહ",
+  "wakeWord": "વેક શબ્દ",
+  "doubleClap": "ડબલ તાળી ડિટેક્શન",
+  "chatTitle": "ડી ચેટ",
+  "chatHint": "ડી ને કંઈપણ પૂછો...",
+  "settingsTitle": "સેટિંગ્સ",
+  "privacyTitle": "ગોપનીયતા અને સુરક્ષા",
+  "onDeviceNotice": "વેક વર્ડ અને તાળી ડિટેક્શન સંપૂર્ણપણે તમારા ડિવાઇસ પર ચાલે છે.",
+  "send": "મોકલો",
+  "cancel": "રદ કરો",
+  "confirm": "પુષ્ટિ કરો"
+}
+

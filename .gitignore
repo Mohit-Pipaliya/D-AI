@@ -1,0 +1,85 @@
+# D AI — Git Ignore
+
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+*.iml
+*.ipr
+*.iws
+.idea/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+pubspec.lock
+
+# macOS
+macos/Flutter/ephemeral/
+*.app
+*.dSYM.zip
+*.dSYM
+
+# Android
+android/.gradle/
+android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Flutter/flutter_export_environment.sh
+
+# Windows
+windows/flutter/ephemeral/
+
+# Coverage
+coverage/
+*.lcov
+
+# Generated
+*.g.dart
+*.freezed.dart
+*.gen.dart
+*.mocks.dart
+
+# Backend / Python
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.env
+backend/*.db
+backend/*.sqlite3
+
+# Docker
+docker-compose.override.yml
+
+# IDE
+.vscode/settings.json
+.vscode/launch.json
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Secrets — NEVER commit
+*.pem
+*.key
+.env
+.env.local
+.env.production
+

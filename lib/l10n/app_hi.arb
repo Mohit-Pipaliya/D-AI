@@ -1,0 +1,19 @@
+{
+  "@@locale": "hi",
+  "appName": "डी",
+  "homeTitle": "आपकी सहायता के लिए तैयार",
+  "homeSubtitle": "\"हे डी\" कहें या दो बार ताली बजाएं",
+  "activationModes": "सक्रियण मोड",
+  "wakePhrase": "वेक वाक्यांश",
+  "wakeWord": "वेक शब्द",
+  "doubleClap": "डबल क्लैप डिटेक्शन",
+  "chatTitle": "डी चैट",
+  "chatHint": "डी से कुछ भी पूछें...",
+  "settingsTitle": "सेटिंग्स",
+  "privacyTitle": "गोपनीयता और सुरक्षा",
+  "onDeviceNotice": "वेक वर्ड और क्लैप डिटेक्शन पूरी तरह से आपके डिवाइस पर चलते हैं।",
+  "send": "भेजें",
+  "cancel": "रद्द करें",
+  "confirm": "पुष्टि करें"
+}
+

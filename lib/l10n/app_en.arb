@@ -1,0 +1,22 @@
+{
+  "@@locale": "en",
+  "appName": "D",
+  "@appName": {
+    "description": "The name of the application"
+  },
+  "homeTitle": "Ready to assist you",
+  "homeSubtitle": "Say \"Hey D\" or clap twice",
+  "activationModes": "Activation Modes",
+  "wakePhrase": "Wake Phrase",
+  "wakeWord": "Wake Word",
+  "doubleClap": "Double Clap Detection",
+  "chatTitle": "D Chat",
+  "chatHint": "Ask D anything...",
+  "settingsTitle": "Settings",
+  "privacyTitle": "Privacy & Security",
+  "onDeviceNotice": "Wake word and clap detection run 100% locally on-device.",
+  "send": "Send",
+  "cancel": "Cancel",
+  "confirm": "Confirm"
+}
+

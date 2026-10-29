@@ -1,0 +1,61 @@
+[project]
+name = "d-ai-backend"
+version = "0.1.0"
+description = "D AI Assistant — FastAPI Backend"
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "T20",  # flake8-print
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "S101",  # assert allowed in tests
+    "B008",  # Depends() in function args is fine for FastAPI
+    "S104",  # Possible binding to all interfaces (0.0.0.0 is standard in containers)
+    "S105",  # Possible hardcoded password check false positives on tokens/types
+    "S106",  # Possible hardcoded password check false positives on parameters
+    "B904",  # Within an except clause raise from
+    "N818",  # AppException exception name
+    "UP017", # Use datetime.UTC alias (preserves 3.9-3.10 runtime compatibility)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.black]
+target-version = ["py312"]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["passlib.*", "jose.*", "limits.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+addopts = "-v --tb=short"
