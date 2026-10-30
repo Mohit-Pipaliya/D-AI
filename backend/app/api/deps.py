@@ -16,12 +16,18 @@ from app.core.security import decode_token
 # ---------------------------------------------------------------------------
 # Database engine & session factory
 # ---------------------------------------------------------------------------
+_is_sqlite = "sqlite" in settings.DATABASE_URL.lower()
+_engine_kwargs: dict = {
+    "echo": settings.APP_DEBUG,
+    "pool_pre_ping": True,
+}
+if not _is_sqlite:
+    _engine_kwargs["pool_size"] = 10
+    _engine_kwargs["max_overflow"] = 20
+
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.APP_DEBUG,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    **_engine_kwargs,
 )
 
 async_session_factory = async_sessionmaker(
